@@ -21,6 +21,7 @@ def print_help():
     print("Available actions:")
     print("    ls")
     print("    push")
+    print("    push-interactive")
     print("    clone")
     print("    set_readonly")
 
@@ -51,7 +52,7 @@ def is_matching(repo, project, organization):
     return False
 
 
-def add_commit_push(project):
+def add_commit_push(project, interactive):
     '''
     Adds a file, commits it and pushed to the git repos
     which are present in a project directory.
@@ -61,35 +62,42 @@ def add_commit_push(project):
     Parameters:
         - Project which should match the name of the sub-directory containing
           the git repositories which should be added, committed and pushed to.
+        - Interactive parameter determining if the commit should be interactive or not
 
     Returns:
         - None
     '''
-    passed = "Result: PASS"
-    failed = "Result: FAIL"
+    if interactive:
+        passed = "Result: PASS"
+        failed = "Result: FAIL"
+
     project_dir = "{}/{}".format(os.getcwd(), project)
     repos = os.listdir(project_dir)
     for repo in repos:
         repo_dir = "{}/{}".format(project_dir, repo)
         if os.path.isdir(repo_dir):
-            print("\nDid {} pass or fail? Type 'fail' for fail. [Default: pass]".format(repo))
+            if interactive:
+                inp = input(f"Did {repo} pass or fail? Type 'fail' for fail. [Default: pass]: ")
+                if inp == "fail":
+                    result = failed
+                elif inp == "skip":
+                    continue
+                else:
+                    result = passed
+                text = ""
+            else:
+                result = "GRADING"
+                text = input("Enter text that should be used as the grading comment: ")
 
-            result = passed
-            inp = input()
-            if inp == "fail":
-                result = failed
-            elif inp == "skip":
-                continue
+            with open(f"{repo_dir}/{result}", "w+") as f:
+                f.write(text)
 
-            subprocess.run(["touch", result], cwd = repo_dir)
-            print("Created file specifying that the student passed or not")
             subprocess.run(["git", "add", result], cwd = repo_dir)
-            subprocess.run(["git", "commit", "-m", "Graded project, see the Result-file in the root directory"], cwd = repo_dir)
-            print("Added and commited file..pushing..")
+            subprocess.run(["git", "commit", "-m", f"Graded project, see the {result}-file in the root directory"], cwd = repo_dir)
             subprocess.run(["git", "push"], cwd = repo_dir)
             print("Pushed changes to github")
         else:
-            print("\n{} is not a directory, and can't be a repo".format(repo))
+            print(f"\n{repo} is not a directory, and can't be a repo")
 
 def list_matching(project, organization):
     '''
@@ -187,9 +195,13 @@ if __name__ == "__main__":
         ans = input()
         if ans == "YES":
             set_matching_readonly(project, organization)
+    elif action == "push-interactive":
+        if organization is not None:
+            print("Organization does not affect pushing")
+        add_commit_push(project, interactive=True)
     elif action == "push":
         if organization is not None:
             print("Organization does not affect pushing")
-        add_commit_push(project)
+        add_commit_push(project, interactive=False)
     else:
         print_help()
