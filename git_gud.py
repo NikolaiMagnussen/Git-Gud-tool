@@ -87,7 +87,8 @@ def add_commit_push(project, interactive):
                 text = ""
             else:
                 result = "GRADING"
-                text = input("Enter text that should be used as the grading comment: ")
+                print(f"\nGrading {repo} - enter grading comment:")
+                text = sys.stdin.read()
 
             with open(f"{repo_dir}/{result}", "w+") as f:
                 f.write(text)
