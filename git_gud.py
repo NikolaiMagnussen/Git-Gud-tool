@@ -52,6 +52,21 @@ def is_matching(repo, project, organization):
 
     return False
 
+def git_add_commit_push(filename, cwd):
+    '''
+    Adds, commits and pushes file to remote.
+
+    Parameters:
+        - Filename of the file to be added to the repo and pushed
+        - Cwd is the directory path of the repo where the file is located
+
+    Returns:
+        - None
+    '''
+    subprocess.run(["git", "add", result], cwd = cwd)
+    subprocess.run(["git", "commit", "-m", f"Graded project, see the {result}-file in the root directory"], cwd = cwd)
+    subprocess.run(["git", "push"], cwd = cwd)
+
 
 def parse_markdown_grading_sheeet(filename):
     '''
@@ -139,9 +154,7 @@ def add_commit_push_grading_sheet():
                     break
 
             if found_student:
-                subprocess.run(["git", "add", result], cwd = repo_dir)
-                subprocess.run(["git", "commit", "-m", f"Graded project, see the {result}-file in the root directory"], cwd = repo_dir)
-                subprocess.run(["git", "push"], cwd = repo_dir)
+                git_add_commit_push(result, repo_dir)
                 print("Pushed changes to github")
             else:
                 print(f"Found no student matching repo name {repo}")
@@ -190,9 +203,7 @@ def add_commit_push(project, comment):
             with open(f"{repo_dir}/{result}", "w+") as f:
                 f.write(text)
 
-            subprocess.run(["git", "add", result], cwd = repo_dir)
-            subprocess.run(["git", "commit", "-m", f"Graded project, see the {result}-file in the root directory"], cwd = repo_dir)
-            subprocess.run(["git", "push"], cwd = repo_dir)
+            git_add_commit_push(result, repo_dir)
             print("Pushed changes to github")
         else:
             print(f"\n{repo} is not a directory, and can't be a repo")
