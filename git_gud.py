@@ -20,8 +20,8 @@ def print_help():
     print("Usage {} <action> [--organization/-o=<organization>] <search string>".format(sys.argv[0]))
     print("Available actions:")
     print("    ls")
-    print("    push")
-    print("    push-interactive")
+    print("    push-comment")
+    print("    push-pass-fail")
     print("    clone")
     print("    set_readonly")
 
@@ -52,7 +52,7 @@ def is_matching(repo, project, organization):
     return False
 
 
-def add_commit_push(project, interactive):
+def add_commit_push(project, comment):
     '''
     Adds a file, commits it and pushed to the git repos
     which are present in a project directory.
@@ -62,12 +62,12 @@ def add_commit_push(project, interactive):
     Parameters:
         - Project which should match the name of the sub-directory containing
           the git repositories which should be added, committed and pushed to.
-        - Interactive parameter determining if the commit should be interactive or not
+        - Comment parameter determining if the commit should be comment or not
 
     Returns:
         - None
     '''
-    if interactive:
+    if not comment:
         passed = "Result: PASS"
         failed = "Result: FAIL"
 
@@ -76,7 +76,7 @@ def add_commit_push(project, interactive):
     for repo in repos:
         repo_dir = "{}/{}".format(project_dir, repo)
         if os.path.isdir(repo_dir):
-            if interactive:
+            if not comment:
                 inp = input(f"Did {repo} pass or fail? Type 'fail' for fail. [Default: pass]: ")
                 if inp == "fail":
                     result = failed
@@ -86,7 +86,7 @@ def add_commit_push(project, interactive):
                     result = passed
                 text = ""
             else:
-                result = "GRADING"
+                result = "GRADING.md"
                 print(f"\nGrading {repo} - enter grading comment:")
                 text = sys.stdin.read()
 
@@ -196,13 +196,13 @@ if __name__ == "__main__":
         ans = input()
         if ans == "YES":
             set_matching_readonly(project, organization)
-    elif action == "push-interactive":
+    elif action == "push-pass-fail":
         if organization is not None:
             print("Organization does not affect pushing")
-        add_commit_push(project, interactive=True)
-    elif action == "push":
+        add_commit_push(project, comment=False)
+    elif action == "push-comment":
         if organization is not None:
             print("Organization does not affect pushing")
-        add_commit_push(project, interactive=False)
+        add_commit_push(project, comment=True)
     else:
         print_help()
