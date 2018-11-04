@@ -24,6 +24,7 @@ def print_help():
     print("    push-pass-fail")
     print("    clone")
     print("    set_readonly")
+    print("    push-grade-sheet")
 
 
 def is_matching(repo, project, organization):
@@ -52,17 +53,113 @@ def is_matching(repo, project, organization):
     return False
 
 
+def parse_markdown_grading_sheeet(filename):
+    '''
+    Parses a markdown file for names and matches them with comments.
+
+    Parameters:
+        - Filename of the markdown file to be parsed
+
+    Returns:
+        - Dictionary where keys are student names and values are comments
+        - None if a non-markdown file was provided
+
+    '''
+    if not ".md" in filename:
+        return None
+
+    grading_sheet = dict()
+    student_name = None
+    student_content = ""
+
+    with open(filename, "r") as markdown_file:
+        for line in markdown_file:
+            # New student, so add previous student to dict
+            if line.startswith("### "):
+                if student_name != None:
+                    grading_sheet[student_name] = student_content
+                student_name = line.strip("# \n")
+                student_content = line
+            # Same student, concatenate content
+            else:
+                student_content = student_content + line
+
+        grading_sheet[student_name] = student_content
+
+    return grading_sheet
+
+
+def add_commit_push_grading_sheet():
+    '''
+    Parses a markdown file for names, matches them to the specific students,
+    writes the comment to a file, adds and commits it to the repo before
+    pushing it to remote.
+
+    Promts the user for the filename of the grading sheet.
+    Can only be used to parse a markdown file where the comments are on the
+    following format:
+
+    ### student-github-name
+    - comments
+    - more comments
+
+    ### new-student-name
+
+    The important thing is not the format of the comments, though they should
+    be markdown as well, but that each student name, and only student names
+    start with ### and that no comments contain ###.
+
+    Parameters:
+        - None
+
+    Returns:
+        - None
+    '''
+    filename = input("Enter path to sheet filename: ")
+    grading_sheet = parse_markdown_grading_sheeet(filename)
+    if grading_sheet == None:
+        print(f"{filename} is not a markdown file: it must end in .md")
+
+
+    project_dir = "{}/{}".format(os.getcwd(), project)
+    repos = os.listdir(project_dir)
+    result = "GRADING.md"
+
+    for repo in repos:
+        repo_dir = "{}/{}".format(project_dir, repo)
+        if os.path.isdir(repo_dir):
+            # Try and find a student name matching the repo name
+            found_student = False
+            for student_name in grading_sheet.keys():
+                if repo.endswith(student_name):
+                    found_student = True
+                    print(f"Assuming {repo} belongs to {student_name}: adding grading comment")
+                    with open(f"{repo_dir}/{result}", "w+") as f:
+                        f.write(grading_sheet[student_name])
+                    break
+
+            if found_student:
+                subprocess.run(["git", "add", result], cwd = repo_dir)
+                subprocess.run(["git", "commit", "-m", f"Graded project, see the {result}-file in the root directory"], cwd = repo_dir)
+                subprocess.run(["git", "push"], cwd = repo_dir)
+                print("Pushed changes to github")
+            else:
+                print(f"Found no student matching repo name {repo}")
+
+
+
 def add_commit_push(project, comment):
     '''
     Adds a file, commits it and pushed to the git repos
     which are present in a project directory.
 
-    Will be used to specify if a student has passed, or failed.
+    Can be used to specify if a student has passed or failed, or to provide
+    a comment interactively.
 
     Parameters:
         - Project which should match the name of the sub-directory containing
           the git repositories which should be added, committed and pushed to.
-        - Comment parameter determining if the commit should be comment or not
+        - Comment parameter determines if the commit should be a comment or not
 
     Returns:
         - None
@@ -204,5 +301,9 @@ if __name__ == "__main__":
         if organization is not None:
             print("Organization does not affect pushing")
         add_commit_push(project, comment=True)
+    elif action == "push-grade-sheet":
+        if organization is not None:
+            print("Organization does nto affect pushind")
+        add_commit_push_grading_sheet()
     else:
         print_help()
