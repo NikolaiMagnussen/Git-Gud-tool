@@ -4,6 +4,7 @@
 
 - Change key in config.py to the API key you got from Github
 - Add owners in config.py if you want to use the set read\_only functionality
+- [Notes](#notes)
 
 ## Author
 Nikolai Magnussen
@@ -17,12 +18,12 @@ current moment it has all the features I need to maintain an effective workflow 
 * Python3
 * GitHub library for Python3
 ## Features
-* Repository search
-* Mass clone
-* Set student access to read-only
-* Interactive grading for PASS/FAIL without comments
-* Interactive grading for inserting comments instead of simple PASS/FAIL
-* Automatic grading based on a Markdown grading document
+* [Repository search](#repository-search)
+* [Mass clone](#mass-clone)
+* [Set student access to read-only](#set-student-access-read-only)
+* [Interactive grading for PASS/FAIL without comments](#interactive-passfail-grading-without-comment)
+* [Interactive grading for inserting comments instead of simple PASS/FAIL](#interactive-grading-with-comment)
+* [Automatic grading based on a Markdown grading document](#automatic-grading-using-a-markdown-document)
 ### Repository Search
 * Fuzzy matching on repository names
 * Ability to specify a GitHub organization if you have multiple assignments that are named the same, but in different organizations and you don’t want both
