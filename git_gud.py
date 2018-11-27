@@ -325,7 +325,7 @@ if __name__ == "__main__":
         add_commit_push(project, comment=True)
     elif action == "push-grade-sheet":
         if organization is not None:
-            print("Organization does nto affect pushing")
+            print("Organization does not affect pushing")
         add_commit_push_grading_sheet()
     else:
         print_help()
