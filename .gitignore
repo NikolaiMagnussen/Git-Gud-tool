@@ -1,2 +1,4 @@
+# Your GitHub API Key should be on config.ini, so it should not be on VCS
+config.ini
 config.py
 __pycache__
