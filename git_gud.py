@@ -4,9 +4,41 @@ import os
 import sys
 import subprocess
 from github import Github, GithubException
+import configparser
 
-from config import GIT_GUD_CONFIG
+# Try to get it from system environment variable (On Linux/macOS you have to create it on $HOME/.bash_profile or .bashrc)
+_key = os.environ.get('GIT_GUD_TOKEN', None)
 
+# If you are not using environment variable, then try to get GITHUB TOKEN KEY from config.ini file.
+if _key is None:
+    ''' On 'config.ini' file
+    [DEFAULT]
+    KEY = Your API KEY
+    '''
+    _config_parser = configparser.ConfigParser()
+    _config_parser.read('config.ini')
+    _key = _config_parser['DEFAULT']['KEY']
+
+
+
+GIT_GUD_CONFIG = {
+    'key': _key,
+
+    'owners': {
+        "GitHub_User_Name1",
+        "GitHub_User_Name2",
+        "GitHub_User_Name3"
+    },
+
+    'grading_file': "GRADING.md",
+
+    'passed': 'Result: PASS',
+
+    'failed': 'Result: FAIL',
+
+    'commit_msg': 'Graded project, see the {}-file in the root directory',
+
+}
 
 def print_help():
     '''
